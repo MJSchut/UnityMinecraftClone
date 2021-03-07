@@ -5,11 +5,42 @@ namespace MinecraftClone.World
 {
     public class MeshGenerator
     {
-        public Mesh GenerateCube(int cubeSize = 1)
+        private List<Vector3> vertexList = new List<Vector3>();
+        private int verticesPerPolygon = 4;
+        private int sidesPerCube = 6;
+
+        private const int bottomIndex = 0;
+        private const int leftIndex = 1;
+        private const int frontIndex = 2;
+        private const int backIndex = 3;
+        private const int rightIndex = 4;
+        private const int topIndex = 5;
+
+        private Dictionary<int, int[]> polygonToVertex =
+            new Dictionary<int, int[]>();
+
+        public MeshGenerator() {
+            vertexList = GetVertices();
+
+            polygonToVertex[bottomIndex] = new int[4] { 0, 1, 2, 3 };
+            polygonToVertex[leftIndex] = new int[4] { 3, 7, 4, 0 };
+            polygonToVertex[frontIndex] = new int[4] { 0, 4, 5, 1 };
+            polygonToVertex[backIndex] = new int[4] { 2, 6, 7, 3 };
+            polygonToVertex[rightIndex] = new int[4] { 1, 5, 6, 2 };
+            polygonToVertex[topIndex] = new int[4] { 4, 7, 6, 5 };
+        }
+
+        public Mesh GenerateCube(List<int> neighbours)
         {
             Mesh quad = new Mesh();
-            List<Vector3> vertexList = GetVertices(cubeSize);
-            quad.vertices = GetAllPolygons(vertexList);
+
+            if (neighbours == null){
+                quad.vertices = GetPolygons(new List<int>());
+            } else
+            {
+                quad.vertices = GetPolygons(neighbours);
+            }
+            
             quad.uv = GetUVMap();
             quad.triangles = GetTriangles();
 
@@ -18,29 +49,74 @@ namespace MinecraftClone.World
             return quad;
         }
 
-        public Vector3[] GetAllPolygons(List<Vector3> vertexList)
+        public Vector3[] GetPolygons(List<int> neighbours)
         {
-            return new Vector3[]{
-                vertexList[0], vertexList[1], vertexList[2], vertexList[3],
-                vertexList[0], vertexList[3], vertexList[7], vertexList[4],
-                vertexList[4], vertexList[5], vertexList[1], vertexList[0],
-                vertexList[6], vertexList[7], vertexList[3], vertexList[2],
-                vertexList[5], vertexList[6], vertexList[2], vertexList[1],
-                vertexList[7], vertexList[6], vertexList[5], vertexList[4]
-            };
+            Vector3[] vertices = new Vector3[(verticesPerPolygon * sidesPerCube) - neighbours.Count];
+
+            for (int i = 0; i < sidesPerCube; i++)
+            {
+                Vector3[] thisPolyGon = GetPolygon(i);
+                for (int j = 0; j < verticesPerPolygon; j++)
+                    vertices[verticesPerPolygon * i + j] = thisPolyGon[j];
+            }
+
+            return vertices;
         }
 
-        private List<Vector3> GetVertices(int cubeSize)
+        public Vector3[] GetPolygon(int i)
+        {
+            int[] polygonIndices = polygonToVertex[i];
+            Vector3[] vertices = new Vector3[4];
+            int vertextIndex = 0;
+            foreach (var index in polygonIndices)
+            {
+                vertices[vertextIndex] = vertexList[index];
+                vertextIndex++;
+            }
+            return vertices;
+        }
+
+        public Vector3[] BottomPolygon()
+        {
+            return GetPolygon(bottomIndex);
+        }
+
+        public Vector3[] LeftPolygon()
+        {
+            return GetPolygon(leftIndex);
+        }
+
+        public Vector3[] FrontPolygon()
+        {
+            return GetPolygon(frontIndex);
+        }
+
+        public Vector3[] BackPolygon()
+        {
+            return GetPolygon(backIndex);
+        }
+
+        public Vector3[] RightPolygon()
+        {
+            return GetPolygon(rightIndex);
+        }
+
+        public Vector3[] TopPolygon()
+        {
+            return GetPolygon(topIndex);
+        }
+
+        private List<Vector3> GetVertices()
         {
             return new List<Vector3> {
-                new Vector3(-cubeSize * .5f, -cubeSize * .5f, cubeSize * .5f),
-                new Vector3(cubeSize * .5f, -cubeSize * .5f, cubeSize * .5f),
-                new Vector3(cubeSize * .5f, -cubeSize * .5f, -cubeSize * .5f),
-                new Vector3(-cubeSize * .5f, -cubeSize * .5f, -cubeSize * .5f),
-                new Vector3(-cubeSize * .5f, cubeSize * .5f, cubeSize * .5f),
-                new Vector3(cubeSize * .5f, cubeSize * .5f, cubeSize * .5f),
-                new Vector3(cubeSize * .5f, cubeSize * .5f, -cubeSize * .5f),
-                new Vector3(-cubeSize * .5f, cubeSize * .5f, -cubeSize * .5f)
+                new Vector3(0, 0, 0),
+                new Vector3(1, 0, 0),
+                new Vector3(1, 0, 1),
+                new Vector3(0, 0, 1),
+                new Vector3(0, 1, 0),
+                new Vector3(1, 1, 0),
+                new Vector3(1, 1, 1),
+                new Vector3(0, 1, 1),
             };
         }
 
@@ -72,29 +148,17 @@ namespace MinecraftClone.World
 
         private int[] GetTriangles()
         {
-            int[] triangles = new int[]
-            {
-                // Cube Bottom Side Triangles
-                3, 1, 0,
-                3, 2, 1,
-                // Cube Left Side Triangles
-                3 + 4 * 1, 1 + 4 * 1, 0 + 4 * 1,
-                3 + 4 * 1, 2 + 4 * 1, 1 + 4 * 1,
+            List<int> triangles = new List<int>();
 
-                // Cube Front Side Triangles
-                3 + 4 * 2, 1 + 4 * 2, 0 + 4 * 2,
-                3 + 4 * 2, 2 + 4 * 2, 1 + 4 * 2,
-                // Cube Back Side Triangles
-                3 + 4 * 3, 1 + 4 * 3, 0 + 4 * 3,
-                3 + 4 * 3, 2 + 4 * 3, 1 + 4 * 3,
-                // Cube Rigth Side Triangles
-                3 + 4 * 4, 1 + 4 * 4, 0 + 4 * 4,
-                3 + 4 * 4, 2 + 4 * 4, 1 + 4 * 4,
-                // Cube Top Side Triangles
-                3 + 4 * 5, 1 + 4 * 5, 0 + 4 * 5,
-                3 + 4 * 5, 2 + 4 * 5, 1 + 4 * 5,
-                };
-            return triangles;
+            for (int i = 0; i < sidesPerCube; i++)
+            {
+                triangles.AddRange(new int[] {
+                    3 + 4 * i, 1 + 4 * i, 0 + 4 * i,
+                    3 + 4 * i, 2 + 4 * i, 1 + 4 * i});
+
+            }
+
+            return triangles.ToArray();
         }
     }
 }

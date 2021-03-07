@@ -19,7 +19,7 @@ namespace MinecraftClone.World
 
         private void GenerateCube(Vector3 position)
         {
-            Mesh singleQuad = meshGenerator.GenerateCube();
+            Mesh singleQuad = meshGenerator.GenerateCube(new List<int>());
 
             GameObject go = new GameObject();
             go.name = "Single quad";
