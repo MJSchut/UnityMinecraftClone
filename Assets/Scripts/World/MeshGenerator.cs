@@ -30,32 +30,91 @@ namespace MinecraftClone.World
             polygonToVertex[topIndex] = new int[4] { 4, 7, 6, 5 };
         }
 
-        public Mesh GenerateCube(List<int> neighbours)
+        public Mesh GenerateCube()
         {
             Mesh quad = new Mesh();
 
-            if (neighbours == null){
-                quad.vertices = GetPolygons(new List<int>());
-            } else
-            {
-                quad.vertices = GetPolygons(neighbours);
-            }
-            
-            quad.uv = GetUVMap();
-            quad.triangles = GetTriangles();
+            quad.vertices = GetPolygons(Vector3.zero);
+       
+            quad.uv = GetUVMap(6);
+            quad.triangles = GetTriangles(6);
 
             quad.RecalculateBounds();
             quad.RecalculateNormals();
             return quad;
         }
 
-        public Vector3[] GetPolygons(List<int> neighbours)
+        public Mesh GenerateChunkMesh(Voxel[,,] chunkData)
         {
-            Vector3[] vertices = new Vector3[(verticesPerPolygon * sidesPerCube) - neighbours.Count];
+            Mesh worldMesh = new Mesh();
+            List<Vector3> vertices = new List<Vector3>();
+
+            for (int x = 0; x < chunkData.GetLength(0); x++)
+            {
+                for (int y = 0; y < chunkData.GetLength(1); y++) 
+                {
+                    for (int z = 0; z < chunkData.GetLength(2); z++)
+                    {
+                        if (chunkData[x, y, z].type == VoxelType.GROUND)
+                        {
+                            Vector3 offset = new Vector3(x, y, z);
+
+                            if (y != 0)
+                            {
+                                if (chunkData[x, y - 1, z].type == VoxelType.AIR)
+                                    vertices.AddRange(BottomPolygon(offset));
+                            }
+
+                            if (y != chunkData.GetLength(1) - 1)
+                            {
+                                if (chunkData[x, y + 1, z].type == VoxelType.AIR)
+                                    vertices.AddRange(TopPolygon(offset));
+                            }
+
+                            if (x != 0)
+                            {
+                                if (chunkData[x - 1, y, z].type == VoxelType.AIR)
+                                    vertices.AddRange(LeftPolygon(offset));
+                            }
+
+                            if (x != chunkData.GetLength(0) - 1)
+                            {
+                                if (chunkData[x + 1, y, z].type == VoxelType.AIR)
+                                    vertices.AddRange(RightPolygon(offset));
+                            }
+
+                            if (z != 0)
+                            {
+                                if (chunkData[x, y, z - 1].type == VoxelType.AIR)
+                                    vertices.AddRange(FrontPolygon(offset));
+                            }
+
+                            if (z != chunkData.GetLength(2) - 1)
+                            {
+                                if (chunkData[x, y, z + 1].type == VoxelType.AIR)
+                                    vertices.AddRange(BackPolygon(offset));
+                            }
+                        }
+                    }
+                }
+            }
+
+            worldMesh.vertices = vertices.ToArray();
+            //worldMesh.uv = GetUVMap(Mathf.RoundToInt(vertices.Count / verticesPerPolygon));
+            worldMesh.triangles = GetTriangles(Mathf.RoundToInt(vertices.Count / verticesPerPolygon));
+
+            worldMesh.RecalculateBounds();
+            worldMesh.RecalculateNormals();
+            return worldMesh;
+        }
+
+        public Vector3[] GetPolygons(Vector3 offset)
+        {
+            Vector3[] vertices = new Vector3[(verticesPerPolygon * sidesPerCube)];
 
             for (int i = 0; i < sidesPerCube; i++)
             {
-                Vector3[] thisPolyGon = GetPolygon(i);
+                Vector3[] thisPolyGon = GetPolygon(i, offset);
                 for (int j = 0; j < verticesPerPolygon; j++)
                     vertices[verticesPerPolygon * i + j] = thisPolyGon[j];
             }
@@ -63,47 +122,47 @@ namespace MinecraftClone.World
             return vertices;
         }
 
-        public Vector3[] GetPolygon(int i)
+        public Vector3[] GetPolygon(int i, Vector3 offset)
         {
             int[] polygonIndices = polygonToVertex[i];
             Vector3[] vertices = new Vector3[4];
             int vertextIndex = 0;
             foreach (var index in polygonIndices)
             {
-                vertices[vertextIndex] = vertexList[index];
+                vertices[vertextIndex] = vertexList[index] + offset;
                 vertextIndex++;
             }
             return vertices;
         }
 
-        public Vector3[] BottomPolygon()
+        public Vector3[] BottomPolygon(Vector3 offset)
         {
-            return GetPolygon(bottomIndex);
+            return GetPolygon(bottomIndex, offset);
         }
 
-        public Vector3[] LeftPolygon()
+        public Vector3[] LeftPolygon(Vector3 offset)
         {
-            return GetPolygon(leftIndex);
+            return GetPolygon(leftIndex, offset);
         }
 
-        public Vector3[] FrontPolygon()
+        public Vector3[] FrontPolygon(Vector3 offset)
         {
-            return GetPolygon(frontIndex);
+            return GetPolygon(frontIndex, offset);
         }
 
-        public Vector3[] BackPolygon()
+        public Vector3[] BackPolygon(Vector3 offset)
         {
-            return GetPolygon(backIndex);
+            return GetPolygon(backIndex, offset);
         }
 
-        public Vector3[] RightPolygon()
+        public Vector3[] RightPolygon(Vector3 offset)
         {
-            return GetPolygon(rightIndex);
+            return GetPolygon(rightIndex, offset);
         }
 
-        public Vector3[] TopPolygon()
+        public Vector3[] TopPolygon(Vector3 offset)
         {
-            return GetPolygon(topIndex);
+            return GetPolygon(topIndex, offset);
         }
 
         private List<Vector3> GetVertices()
@@ -120,41 +179,36 @@ namespace MinecraftClone.World
             };
         }
 
-        private Vector2[] GetUVMap()
+        private Vector2[] GetUVMap(int faces)
         {
             Vector2 _00_CORDINATES = new Vector2(0f, 0f);
             Vector2 _10_CORDINATES = new Vector2(1f, 0f);
             Vector2 _01_CORDINATES = new Vector2(0f, 1f);
             Vector2 _11_CORDINATES = new Vector2(1f, 1f);
 
-            Vector2[] uvs = new Vector2[]
+            List<Vector2> uvs = new List<Vector2>();
+            for (int i = 0; i < faces; i++)
             {
-                // Bottom
-                _11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES,
-                // Left
-                _11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES,
-                // Front
-                _11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES,
-                // Back
-                _11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES,
-                // Right
-                _11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES,
-                // Top
-                _11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES,
-            };
+                uvs.AddRange(new Vector2[]{ _00_CORDINATES,
+                                         _10_CORDINATES,
+                                         _01_CORDINATES,
+                                         _11_CORDINATES });
+            }
 
-            return uvs;
+
+            return uvs.ToArray();
         }
 
-        private int[] GetTriangles()
+        private int[] GetTriangles(int faces)
         {
             List<int> triangles = new List<int>();
 
-            for (int i = 0; i < sidesPerCube; i++)
+            for (int i = 0; i < faces; i++)
             {
                 triangles.AddRange(new int[] {
-                    3 + 4 * i, 1 + 4 * i, 0 + 4 * i,
-                    3 + 4 * i, 2 + 4 * i, 1 + 4 * i});
+                    0 + 4 * i, 1 + 4 * i, 3 + 4 * i,
+                    1 + 4 * i, 2 + 4 * i, 3 + 4 * i
+                });
 
             }
 

@@ -7,6 +7,7 @@ namespace MinecraftClone.World
     public class WorldGenerator : MonoBehaviour
     {
         public int[,,] WorldData;
+        public List<Vector2> octaveFrequencyAndAmplitude = new List<Vector2>() { new Vector2(1f, 0.1f) };
         public Vector3Int ChunkDimensions = new Vector3Int(32, 32, 32);
         public Material GroundMaterial;
 
@@ -19,7 +20,7 @@ namespace MinecraftClone.World
 
         private void GenerateCube(Vector3 position)
         {
-            Mesh singleQuad = meshGenerator.GenerateCube(new List<int>());
+            Mesh singleQuad = meshGenerator.GenerateCube();
 
             GameObject go = new GameObject();
             go.name = "Single quad";
@@ -34,39 +35,26 @@ namespace MinecraftClone.World
             go.transform.position = position;
         }
 
-        public void GenerateWorld()
+        public void GenerateChunk()
         {
-            GenerateRandomWorldData();
+            WorldData worldData = new WorldData(this);
+            worldData.SetChunkSize(new int[] { ChunkDimensions.x, ChunkDimensions.y, ChunkDimensions.z });
+            worldData.GenerateChunk(Vector3.zero);
+            worldData.GenerateChunkWithNoiseMap(0);
 
-            for (int x = 0; x < ChunkDimensions.x; x++)
-            {
-                for (int y = 0; y < ChunkDimensions.y; y++)
-                {
-                    for (int z = 0; z < ChunkDimensions.z; z++)
-                    {
-                        if (WorldData[x, y, z] == 1)
-                        {
-                            GenerateCube(new Vector3(x, y, z));
-                        }
-                    }
-                }
-            }
-        }
+            Mesh chunkMesh = meshGenerator.GenerateChunkMesh(worldData.chunks[0].ChunkData);
 
-        private void GenerateRandomWorldData()
-        {
-            WorldData = new int[ChunkDimensions.x, ChunkDimensions.y, ChunkDimensions.z];
+            GameObject go = new GameObject();
+            go.name = "World Mesh";
+            go.transform.parent = transform;
 
-            for (int x = 0; x < ChunkDimensions.x; x++)
-            {
-                for (int y = 0; y < ChunkDimensions.y; y++)
-                {
-                    for (int z = 0; z < ChunkDimensions.z; z++)
-                    {
-                        WorldData[x, y, z] = Random.value < 0.5f ? 1 : 0;
-                    }
-                }
-            }
+            MeshRenderer mr = go.AddComponent<MeshRenderer>();
+            mr.material = GroundMaterial;
+
+            MeshFilter mf = go.AddComponent<MeshFilter>();
+            mf.mesh = chunkMesh;
+
+            go.transform.position = Vector3.zero;
         }
 
         public void DestroyAll()
