@@ -36,7 +36,7 @@ namespace MinecraftClone.World
 
             quad.vertices = GetPolygons(Vector3.zero);
        
-            quad.uv = GetUVMap(6);
+            quad.uv = GetUVMap(new Vector2(1f, 19f));
             quad.triangles = GetTriangles(6);
 
             quad.RecalculateBounds();
@@ -48,6 +48,7 @@ namespace MinecraftClone.World
         {
             Mesh worldMesh = new Mesh();
             List<Vector3> vertices = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
 
             for (int x = 0; x < chunkData.GetLength(0); x++)
             {
@@ -62,37 +63,58 @@ namespace MinecraftClone.World
                             if (y != 0)
                             {
                                 if (chunkData[x, y - 1, z].type == VoxelType.AIR)
+                                {
                                     vertices.AddRange(BottomPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(4f, 19f)));
+                                }   
                             }
 
                             if (y != chunkData.GetLength(1) - 1)
                             {
                                 if (chunkData[x, y + 1, z].type == VoxelType.AIR)
+                                {
                                     vertices.AddRange(TopPolygon(offset));
+                                    if (Random.value > 0.1f)
+                                        uvs.AddRange(GetUVMap(new Vector2(1f, 19f)));
+                                    else
+                                        uvs.AddRange(GetUVMap(new Vector2(2f, 19f)));
+                                } 
                             }
 
                             if (x != 0)
                             {
                                 if (chunkData[x - 1, y, z].type == VoxelType.AIR)
+                                {
                                     vertices.AddRange(LeftPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                } 
                             }
 
                             if (x != chunkData.GetLength(0) - 1)
                             {
                                 if (chunkData[x + 1, y, z].type == VoxelType.AIR)
+                                {
                                     vertices.AddRange(RightPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                }  
                             }
 
                             if (z != 0)
                             {
                                 if (chunkData[x, y, z - 1].type == VoxelType.AIR)
+                                {
                                     vertices.AddRange(FrontPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                } 
                             }
 
                             if (z != chunkData.GetLength(2) - 1)
                             {
                                 if (chunkData[x, y, z + 1].type == VoxelType.AIR)
+                                {
                                     vertices.AddRange(BackPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                }
                             }
                         }
                     }
@@ -100,8 +122,9 @@ namespace MinecraftClone.World
             }
 
             worldMesh.vertices = vertices.ToArray();
-            //worldMesh.uv = GetUVMap(Mathf.RoundToInt(vertices.Count / verticesPerPolygon));
             worldMesh.triangles = GetTriangles(Mathf.RoundToInt(vertices.Count / verticesPerPolygon));
+            worldMesh.uv = uvs.ToArray();
+            
 
             worldMesh.RecalculateBounds();
             worldMesh.RecalculateNormals();
@@ -179,24 +202,16 @@ namespace MinecraftClone.World
             };
         }
 
-        private Vector2[] GetUVMap(int faces)
+        private Vector2[] GetUVMap(Vector2 texturePos)
         {
-            Vector2 _00_CORDINATES = new Vector2(0f, 0f);
-            Vector2 _10_CORDINATES = new Vector2(1f, 0f);
-            Vector2 _01_CORDINATES = new Vector2(0f, 1f);
-            Vector2 _11_CORDINATES = new Vector2(1f, 1f);
+            float textureSize = 1f / 20f;
 
-            List<Vector2> uvs = new List<Vector2>();
-            for (int i = 0; i < faces; i++)
-            {
-                uvs.AddRange(new Vector2[]{ _00_CORDINATES,
-                                         _10_CORDINATES,
-                                         _01_CORDINATES,
-                                         _11_CORDINATES });
-            }
+            Vector2 _00_COORDINATES = new Vector2(texturePos.x * textureSize, texturePos.y * textureSize);
+            Vector2 _10_COORDINATES = new Vector2((texturePos.x + 1) * textureSize, texturePos.y * textureSize);
+            Vector2 _01_COORDINATES = new Vector2(texturePos.x * textureSize, (texturePos.y + 1) * textureSize);
+            Vector2 _11_COORDINATES = new Vector2((texturePos.x + 1) * textureSize, (texturePos.y + 1) * textureSize);
 
-
-            return uvs.ToArray();
+            return new Vector2[] { _10_COORDINATES, _11_COORDINATES, _01_COORDINATES, _00_COORDINATES };
         }
 
         private int[] GetTriangles(int faces)
@@ -206,8 +221,8 @@ namespace MinecraftClone.World
             for (int i = 0; i < faces; i++)
             {
                 triangles.AddRange(new int[] {
-                    0 + 4 * i, 1 + 4 * i, 3 + 4 * i,
-                    1 + 4 * i, 2 + 4 * i, 3 + 4 * i
+                    1 + 4 * i, 2 + 4 * i, 3 + 4 * i,
+                    3 + 4 * i, 0 + 4 * i, 1 + 4 * i,
                 });
 
             }

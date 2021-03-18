@@ -16,10 +16,21 @@ namespace MinecraftClone.EditorScripts
             if (GUILayout.Button("Generate Single mesh"))
                 worldGen.GenerateSingleMesh();
 
-            
-
             if (GUILayout.Button("Generate Single Chunk"))
-                worldGen.GenerateChunk();
+                worldGen.GenerateChunk(Vector3.zero);
+
+            if (GUILayout.Button("Generate Nine chunks"))
+            {
+                worldGen.Awake();
+                for (int x = -1; x < 2; x++)
+                {
+                    for (int z = -1; z < 2; z++)
+                    {
+                        worldGen.GenerateChunk(new Vector3(x, 0, z));
+                    }
+                }
+                
+            }
 
             if (GUILayout.Button("Remove all meshes"))
                 worldGen.DestroyAll();
