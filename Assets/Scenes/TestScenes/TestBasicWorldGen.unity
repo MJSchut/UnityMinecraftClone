@@ -387,6 +387,7 @@ MonoBehaviour:
   NoiseFrequency: 0.01
   ChunkDimensions: {x: 16, y: 256, z: 16}
   GroundMaterial: {fileID: 2100000, guid: 81d22837c0d4f4aeaba12b22f2ccb24d, type: 2}
+  GameObjectPoolLength: 500
 --- !u!4 &1441016139
 Transform:
   m_ObjectHideFlags: 0

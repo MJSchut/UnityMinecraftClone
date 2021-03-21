@@ -12,6 +12,8 @@ namespace MinecraftClone.World
         public float NoiseFrequency = 1f;
         public Vector3Int ChunkDimensions = new Vector3Int(32, 32, 32);
         public Material GroundMaterial;
+        public Queue<GameObject> gameObjectPool = new Queue<GameObject>();
+        public int GameObjectPoolLength = 500;
 
         MeshGenerator meshGenerator = new MeshGenerator();
         WorldData worldData;
@@ -21,9 +23,31 @@ namespace MinecraftClone.World
         {
             worldData = new WorldData(this);
             worldData.SetChunkSize(new int[] { ChunkDimensions.x, ChunkDimensions.y, ChunkDimensions.z });
+
+            for (int i = 0; i < GameObjectPoolLength; i++)
+            {
+                gameObjectPool.Enqueue(CreateEmptyObject());
+            }
         }
 
-        public void Update()
+        public GameObject CreateEmptyObject()
+        {
+            GameObject pooledObject = new GameObject();
+            pooledObject.transform.parent = transform;
+
+            MeshRenderer mr = pooledObject.AddComponent<MeshRenderer>();
+            mr.material = GroundMaterial;
+
+            MeshFilter mf = pooledObject.AddComponent<MeshFilter>();
+            mf.mesh = new Mesh();
+
+            pooledObject.name = "Pooled object";
+            pooledObject.SetActive(false);
+
+            return pooledObject;
+        }
+
+        public void LateUpdate()
         {
             if (ChunkDataQueue.Count > 1)
             {
@@ -73,25 +97,24 @@ namespace MinecraftClone.World
 
         public GameObject GenerateChunkObject(MeshData meshData)
         {
-            Mesh chunkMesh = new Mesh();
-            chunkMesh.vertices = meshData.Vertices.ToArray();
-            chunkMesh.triangles = meshData.Triangles.ToArray();
-            chunkMesh.uv = meshData.Uvs.ToArray();
+            GameObject go;
+            if (gameObjectPool.Count > 0)
+                go = gameObjectPool.Dequeue();
+            else
+                go = CreateEmptyObject();
 
-            chunkMesh.RecalculateBounds();
-            chunkMesh.RecalculateNormals();
+            MeshFilter mf = go.GetComponent<MeshFilter>();
+            mf.mesh.vertices = meshData.Vertices.ToArray();
+            mf.mesh.triangles = meshData.Triangles.ToArray();
+            mf.mesh.uv = meshData.Uvs.ToArray();
+
+            mf.mesh.RecalculateBounds();
+            mf.mesh.RecalculateNormals();
 
             Vector3 position = meshData.position;
-
-            GameObject go = new GameObject();
             go.name = "Chunk_" + position.x + "_" + position.y + "_" + position.z;
             go.transform.parent = transform;
-
-            MeshRenderer mr = go.AddComponent<MeshRenderer>();
-            mr.material = GroundMaterial;
-
-            MeshFilter mf = go.AddComponent<MeshFilter>();
-            mf.mesh = chunkMesh;
+            go.SetActive(true);
 
             go.transform.position = new Vector3(position.x * ChunkDimensions.x, position.y * ChunkDimensions.y, position.z * ChunkDimensions.z);
             return go;

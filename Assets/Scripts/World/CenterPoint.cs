@@ -15,7 +15,7 @@ public class CenterPoint : MonoBehaviour
 
     void CheckForWorldUpdate()
     {
-        worldGen.GenerateChunkDataAndSurroundingChunks(new Vector3(currentChunk.x, 0, currentChunk.z), 4);
+        worldGen.GenerateChunkDataAndSurroundingChunks(new Vector3(currentChunk.x, 0, currentChunk.z), 3);
     }
 
     void RunWorldGenThread()
