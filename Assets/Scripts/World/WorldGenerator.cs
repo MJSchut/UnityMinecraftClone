@@ -15,11 +15,20 @@ namespace MinecraftClone.World
 
         MeshGenerator meshGenerator = new MeshGenerator();
         WorldData worldData;
+        Queue<MeshData> ChunkDataQueue = new Queue<MeshData>();
 
         public void Awake()
         {
             worldData = new WorldData(this);
             worldData.SetChunkSize(new int[] { ChunkDimensions.x, ChunkDimensions.y, ChunkDimensions.z });
+        }
+
+        public void Update()
+        {
+            if (ChunkDataQueue.Count > 1)
+            {
+                GenerateChunkObject(ChunkDataQueue.Dequeue());
+            }
         }
 
         public void GenerateSingleMesh()
@@ -44,18 +53,35 @@ namespace MinecraftClone.World
             go.transform.position = position;
         }
 
-        public void GenerateChunk(Vector3 position)
+        public MeshData GenerateChunkData(Vector3 position, bool queue=true)
         {
             if (worldData == null)
                 Awake();
-           
+
             if (worldData.GenerateChunk(position) == false)
-                return;
+                return null;
 
             int newIndex = worldData.chunks.Count - 1;
             worldData.GenerateChunkWithNoiseMap(newIndex);
 
-            Mesh chunkMesh = meshGenerator.GenerateChunkMesh(worldData.chunks[newIndex].ChunkData);
+            MeshData meshData = meshGenerator.GenerateChunkMesh(worldData.chunks[newIndex].ChunkData);
+            meshData.position = position;
+            if(queue == true)
+                ChunkDataQueue.Enqueue(meshData);
+            return meshData;
+        }
+
+        public GameObject GenerateChunkObject(MeshData meshData)
+        {
+            Mesh chunkMesh = new Mesh();
+            chunkMesh.vertices = meshData.Vertices.ToArray();
+            chunkMesh.triangles = meshData.Triangles.ToArray();
+            chunkMesh.uv = meshData.Uvs.ToArray();
+
+            chunkMesh.RecalculateBounds();
+            chunkMesh.RecalculateNormals();
+
+            Vector3 position = meshData.position;
 
             GameObject go = new GameObject();
             go.name = "Chunk_" + position.x + "_" + position.y + "_" + position.z;
@@ -68,15 +94,35 @@ namespace MinecraftClone.World
             mf.mesh = chunkMesh;
 
             go.transform.position = new Vector3(position.x * ChunkDimensions.x, position.y * ChunkDimensions.y, position.z * ChunkDimensions.z);
+            return go;
         }
 
-        public void GenerateChunkAndSurroundingChunks(Vector3 position)
+        public void GenerateChunk(Vector3 position)
         {
-            for (int x = -1; x <= 1; x++)
+            MeshData meshData = new MeshData();
+            meshData = GenerateChunkData(position, false);
+
+            GenerateChunkObject(meshData);
+        }
+
+        public void GenerateChunkAndSurroundingChunks(Vector3 position, int rings=1)
+        {
+            for (int x = -rings; x <= rings; x++)
             {
-                for (int z = -1; z <= 1; z++)
+                for (int z = -rings; z <= rings; z++)
                 {
                     GenerateChunk(new Vector3(position.x + x, position.y, position.z + z));
+                }
+            }
+        }
+
+        public void GenerateChunkDataAndSurroundingChunks(Vector3 position, int rings = 1)
+        {
+            for (int x = -rings; x <= rings; x++)
+            {
+                for (int z = -rings; z <= rings; z++)
+                {
+                    GenerateChunkData(new Vector3(position.x + x, position.y, position.z + z));
                 }
             }
         }

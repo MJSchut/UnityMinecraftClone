@@ -37,16 +37,16 @@ namespace MinecraftClone.World
             quad.vertices = GetPolygons(Vector3.zero);
        
             quad.uv = GetUVMap(new Vector2(1f, 19f));
-            quad.triangles = GetTriangles(6);
+            quad.triangles = GetTriangles(6).ToArray();
 
             quad.RecalculateBounds();
             quad.RecalculateNormals();
             return quad;
         }
 
-        public Mesh GenerateChunkMesh(Voxel[,,] chunkData)
+        public MeshData GenerateChunkMesh(Voxel[,,] chunkData)
         {
-            Mesh worldMesh = new Mesh();
+            MeshData meshData = new MeshData();
             List<Vector3> vertices = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
 
@@ -121,14 +121,11 @@ namespace MinecraftClone.World
                 }
             }
 
-            worldMesh.vertices = vertices.ToArray();
-            worldMesh.triangles = GetTriangles(Mathf.RoundToInt(vertices.Count / verticesPerPolygon));
-            worldMesh.uv = uvs.ToArray();
-            
+            meshData.Vertices = vertices;
+            meshData.Triangles = GetTriangles(Mathf.RoundToInt(vertices.Count / verticesPerPolygon));
+            meshData.Uvs = uvs;
 
-            worldMesh.RecalculateBounds();
-            worldMesh.RecalculateNormals();
-            return worldMesh;
+            return meshData;
         }
 
         public Vector3[] GetPolygons(Vector3 offset)
@@ -214,7 +211,7 @@ namespace MinecraftClone.World
             return new Vector2[] { _10_COORDINATES, _11_COORDINATES, _01_COORDINATES, _00_COORDINATES };
         }
 
-        private int[] GetTriangles(int faces)
+        private List<int> GetTriangles(int faces)
         {
             List<int> triangles = new List<int>();
 
@@ -227,7 +224,7 @@ namespace MinecraftClone.World
 
             }
 
-            return triangles.ToArray();
+            return triangles;
         }
     }
 }

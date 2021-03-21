@@ -202,17 +202,17 @@ PrefabInstance:
     - target: {fileID: 3666068397518523128, guid: 0b073d3ac48e14080a25255b7e4b989d,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 32
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3666068397518523128, guid: 0b073d3ac48e14080a25255b7e4b989d,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 84
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 3666068397518523128, guid: 0b073d3ac48e14080a25255b7e4b989d,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 32
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3666068397518523128, guid: 0b073d3ac48e14080a25255b7e4b989d,
         type: 3}
@@ -384,8 +384,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NoiseOctaves: 12
-  NoiseFrequency: 0.03
-  ChunkDimensions: {x: 64, y: 128, z: 64}
+  NoiseFrequency: 0.01
+  ChunkDimensions: {x: 16, y: 256, z: 16}
   GroundMaterial: {fileID: 2100000, guid: 81d22837c0d4f4aeaba12b22f2ccb24d, type: 2}
 --- !u!4 &1441016139
 Transform:

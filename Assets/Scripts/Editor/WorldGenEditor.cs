@@ -17,7 +17,7 @@ namespace MinecraftClone.EditorScripts
                 worldGen.GenerateSingleMesh();
 
             if (GUILayout.Button("Generate Single Chunk"))
-                worldGen.GenerateChunk(Vector3.zero);
+                worldGen.GenerateChunk(new Vector3(0, 0, 0));
 
             if (GUILayout.Button("Generate Nine chunks"))
             {
