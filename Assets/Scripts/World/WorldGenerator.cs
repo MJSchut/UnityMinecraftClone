@@ -24,6 +24,11 @@ namespace MinecraftClone.World
             worldData = new WorldData(this);
             worldData.SetChunkSize(new int[] { ChunkDimensions.x, ChunkDimensions.y, ChunkDimensions.z });
 
+            
+        }
+
+        public void Start()
+        {
             for (int i = 0; i < GameObjectPoolLength; i++)
             {
                 gameObjectPool.Enqueue(CreateEmptyObject());

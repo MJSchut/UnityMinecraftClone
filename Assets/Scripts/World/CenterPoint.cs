@@ -11,7 +11,7 @@ public class CenterPoint : MonoBehaviour
     Vector3 currentChunk = Vector3.zero;
 
     Thread WorldGenThread = null;
-    EventWaitHandle WorldGenHandle = new EventWaitHandle(true, EventResetMode.ManualReset);
+    EventWaitHandle WorldGenHandle = new EventWaitHandle(true, EventResetMode.AutoReset);
 
     void CheckForWorldUpdate()
     {
@@ -20,12 +20,9 @@ public class CenterPoint : MonoBehaviour
 
     void RunWorldGenThread()
     {
-        WorldGenHandle.Reset();
-
         while (true) {
             WorldGenHandle.WaitOne();
             CheckForWorldUpdate();
-            WorldGenHandle.Reset();
         }
     }
 
@@ -46,7 +43,7 @@ public class CenterPoint : MonoBehaviour
         float chunkZ = Mathf.Round(transform.position.z / worldGen.ChunkDimensions.z);
 
         if (currentChunk != new Vector3(chunkX, 0, chunkZ))
-            CheckForWorldUpdate();
+            WorldGenHandle.Set();
 
         currentChunk = new Vector3(chunkX, 0, chunkZ);
     }

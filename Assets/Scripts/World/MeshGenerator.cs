@@ -8,6 +8,7 @@ namespace MinecraftClone.World
         private List<Vector3> vertexList = new List<Vector3>();
         private int verticesPerPolygon = 4;
         private int sidesPerCube = 6;
+        private System.Random random = new System.Random();
 
         private const int bottomIndex = 0;
         private const int leftIndex = 1;
@@ -74,7 +75,7 @@ namespace MinecraftClone.World
                                 if (chunkData[x, y + 1, z].type == VoxelType.AIR)
                                 {
                                     vertices.AddRange(TopPolygon(offset));
-                                    if (Random.value > 0.1f)
+                                    if (random.NextDouble() > 0.1f)
                                         uvs.AddRange(GetUVMap(new Vector2(1f, 19f)));
                                     else
                                         uvs.AddRange(GetUVMap(new Vector2(2f, 19f)));
