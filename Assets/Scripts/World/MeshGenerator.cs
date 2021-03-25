@@ -45,8 +45,10 @@ namespace MinecraftClone.World
             return quad;
         }
 
-        public MeshData GenerateChunkMesh(Voxel[,,] chunkData)
+        public MeshData GenerateChunkMesh(WorldData worldData, Vector3 position)
         {
+            Voxel[,,] chunkData = worldData.GetChunk(position).ChunkData;
+
             MeshData meshData = new MeshData();
             List<Vector3> vertices = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
@@ -89,6 +91,15 @@ namespace MinecraftClone.World
                                     vertices.AddRange(LeftPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
                                 } 
+                            } else // x is 0
+                            {
+                                Chunk neighbour = worldData.GetChunk(new Vector3(position.x - 1, position.y, position.z));
+
+                                if (neighbour?.ChunkData[chunkData.GetLength(0) - 1, y, z].type == VoxelType.AIR)
+                                {
+                                    vertices.AddRange(LeftPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                }
                             }
 
                             if (x != chunkData.GetLength(0) - 1)
@@ -99,6 +110,15 @@ namespace MinecraftClone.World
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
                                 }  
                             }
+                            else // x is equal to chunk width
+                            {
+                                Chunk neighbour = worldData.GetChunk(new Vector3(position.x + 1, position.y, position.z));
+                                if (neighbour?.ChunkData[0, y, z].type == VoxelType.AIR)
+                                {
+                                    vertices.AddRange(RightPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                }
+                            }
 
                             if (z != 0)
                             {
@@ -107,11 +127,28 @@ namespace MinecraftClone.World
                                     vertices.AddRange(FrontPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
                                 } 
+                            } else // z is 0
+                            {
+                                Chunk neighbour = worldData.GetChunk(new Vector3(position.x, position.y, position.z - 1));
+                                if (neighbour?.ChunkData[x, y, chunkData.GetLength(2) - 1].type == VoxelType.AIR)
+                                {
+                                    vertices.AddRange(FrontPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                }
                             }
 
                             if (z != chunkData.GetLength(2) - 1)
                             {
                                 if (chunkData[x, y, z + 1].type == VoxelType.AIR)
+                                {
+                                    vertices.AddRange(BackPolygon(offset));
+                                    uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                }
+                            }
+                            else // z is equal to chunk length
+                            {
+                                Chunk neighbour = worldData.GetChunk(new Vector3(position.x, position.y, position.z + 1));
+                                if (neighbour?.ChunkData[x, y, 0].type == VoxelType.AIR)
                                 {
                                     vertices.AddRange(BackPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));

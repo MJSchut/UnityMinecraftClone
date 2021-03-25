@@ -194,6 +194,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1162091007, guid: 0b073d3ac48e14080a25255b7e4b989d, type: 3}
+      propertyPath: InitalRings
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162091007, guid: 0b073d3ac48e14080a25255b7e4b989d, type: 3}
+      propertyPath: UpdateRings
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162091007, guid: 0b073d3ac48e14080a25255b7e4b989d, type: 3}
+      propertyPath: DeactivateRings
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 3666068397518523128, guid: 0b073d3ac48e14080a25255b7e4b989d,
         type: 3}
       propertyPath: m_RootOrder
@@ -253,6 +265,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Simple Controllable Camera
+      objectReference: {fileID: 0}
+    - target: {fileID: 3666068397518523135, guid: 0b073d3ac48e14080a25255b7e4b989d,
+        type: 3}
+      propertyPath: boost
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0b073d3ac48e14080a25255b7e4b989d, type: 3}
@@ -385,7 +402,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NoiseOctaves: 12
   NoiseFrequency: 0.01
-  ChunkDimensions: {x: 16, y: 256, z: 16}
+  NoiseOctaves2: 6
+  NoiseFrequency2: 0.0005
+  ChunkDimensions: {x: 16, y: 64, z: 16}
   GroundMaterial: {fileID: 2100000, guid: 81d22837c0d4f4aeaba12b22f2ccb24d, type: 2}
   GameObjectPoolLength: 500
 --- !u!4 &1441016139
