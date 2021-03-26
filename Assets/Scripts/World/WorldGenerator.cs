@@ -7,6 +7,7 @@ namespace MinecraftClone.World
 {
     public class WorldGenerator : MonoBehaviour
     {
+        public static WorldGenerator instance { get; private set; }
         public int[,,] WorldData;
 
         public int NoiseOctaves = 3;
@@ -29,6 +30,7 @@ namespace MinecraftClone.World
 
         public void Awake()
         {
+            instance = this;
             worldData = new WorldData(this);
             worldData.SetChunkSize(new int[] { ChunkDimensions.x, ChunkDimensions.y, ChunkDimensions.z });
         }
@@ -73,7 +75,34 @@ namespace MinecraftClone.World
                 mf = pooledObject.GetComponent<MeshFilter>();
                 mf.mesh.Clear();
             }
-                
+
+            MeshCollider mc;
+            if (pooledObject.GetComponent<MeshCollider>() == null)
+            {
+                mc = pooledObject.AddComponent<MeshCollider>();
+                mc.sharedMesh = new Mesh();
+            }
+            else
+            {
+                mc = pooledObject.AddComponent<MeshCollider>();
+                mc.sharedMesh.Clear();
+            }
+
+            Rigidbody rig;
+            if (pooledObject.GetComponent<Rigidbody>() == null)
+            {
+                rig = pooledObject.AddComponent<Rigidbody>();
+                rig.isKinematic = true;
+                rig.useGravity = false;
+            }
+            else
+            {
+                rig = pooledObject.GetComponent<Rigidbody>();
+                rig.isKinematic = true;
+                rig.useGravity = false;
+            }
+
+
             pooledObject.name = "Pooled object";
             pooledObject.SetActive(false);
             return pooledObject;
@@ -110,9 +139,9 @@ namespace MinecraftClone.World
             go.transform.position = position;
         }
 
-        public MeshData GenerateChunkMesh(Vector3 position, bool queue=true)
+        public MeshData GenerateChunkMesh(Vector3 position, bool queue=true, bool regen=false)
         {
-            if (ActiveChunks.Contains(position))
+            if (ActiveChunks.Contains(position) && regen == false)
                 return null;
 
             MeshData meshData = meshGenerator.GenerateChunkMesh(
@@ -122,7 +151,8 @@ namespace MinecraftClone.World
             if(queue == true)
                 ChunkDataQueue.Enqueue(meshData);
 
-            ActiveChunks.Add(position);
+            if (regen == false)
+                ActiveChunks.Add(position);
 
             return meshData;
         }
@@ -149,13 +179,7 @@ namespace MinecraftClone.World
             else
                 go = CreateEmptyObject();
 
-            MeshFilter mf = go.GetComponent<MeshFilter>();
-            mf.mesh.vertices = meshData.Vertices.ToArray();
-            mf.mesh.triangles = meshData.Triangles.ToArray();
-            mf.mesh.uv = meshData.Uvs.ToArray();
-
-            mf.mesh.RecalculateBounds();
-            mf.mesh.RecalculateNormals();
+            SetMeshData(go, meshData);
 
             Vector3 position = meshData.position;
             go.name = "Chunk_" + position.x + "_" + position.y + "_" + position.z;
@@ -167,6 +191,19 @@ namespace MinecraftClone.World
             RegisterChunk(go, position);
 
             return go;
+        }
+
+        public void SetMeshData(GameObject go, MeshData meshData) {
+            MeshFilter mf = go.GetComponent<MeshFilter>();
+            mf.mesh.vertices = meshData.Vertices.ToArray();
+            mf.mesh.triangles = meshData.Triangles.ToArray();
+            mf.mesh.uv = meshData.Uvs.ToArray();
+
+            mf.mesh.RecalculateBounds();
+            mf.mesh.RecalculateNormals();
+
+            MeshCollider mc = go.GetComponent<MeshCollider>();
+            mc.sharedMesh = mf.mesh;
         }
 
         public void PoolChunk(Vector3 position)
@@ -197,6 +234,63 @@ namespace MinecraftClone.World
             GenerateChunkMesh(position, false);
 
             GenerateChunkObject(meshData);
+        }
+
+        public void UpdateVoxelData(Vector3 chunkPosition, Vector3Int voxelPosition, VoxelType newType)
+        {
+            if (worldData == null)
+                Awake();
+
+            Chunk chunk = worldData.GetChunk(chunkPosition);
+            int xlength = chunk.ChunkData.GetLength(0);
+            int ylength = chunk.ChunkData.GetLength(1);
+            int zlength = chunk.ChunkData.GetLength(2);
+
+            int voxelX = voxelPosition.x;
+            int voxelY = voxelPosition.y;
+            int voxelZ = voxelPosition.z;
+
+            if (voxelX < 0 || voxelX >= xlength)
+                return;
+
+            if (voxelY < 0 || voxelY >= ylength)
+                return;
+
+            if (voxelZ < 0 || voxelZ >= zlength)
+                return;
+
+            chunk.ChunkData[voxelX, voxelY, voxelZ].SetType(newType);
+
+            MeshData meshData = GenerateChunkMesh(chunkPosition, false, true);
+            SetMeshData(PositionToGameObjectDict[chunkPosition], meshData);
+
+            Vector3 neighbourPosition = Vector3.zero;
+
+            if (voxelX == 0)
+                neighbourPosition = new Vector3(chunkPosition.x - 1, chunkPosition.y, chunkPosition.z);
+
+            else if (voxelX == xlength)
+                neighbourPosition = new Vector3(chunkPosition.x + 1, chunkPosition.y, chunkPosition.z);
+
+            if (neighbourPosition != Vector3.zero)
+            {
+                MeshData neighbourData = GenerateChunkMesh(neighbourPosition, false, true);
+                SetMeshData(PositionToGameObjectDict[neighbourPosition], neighbourData);
+            }
+
+            neighbourPosition = Vector3.zero;
+
+            if (voxelZ == 0)
+                neighbourPosition = new Vector3(chunkPosition.x, chunkPosition.y, chunkPosition.z - 1);
+
+            else if (voxelZ == zlength)
+                neighbourPosition = new Vector3(chunkPosition.x, chunkPosition.y, chunkPosition.z + 1);
+
+            if (neighbourPosition != Vector3.zero)
+            {
+                MeshData neighbourData = GenerateChunkMesh(neighbourPosition, false, true);
+                SetMeshData(PositionToGameObjectDict[neighbourPosition], neighbourData);
+            }
         }
 
         public void GenerateChunksAndSurroundingChunks(Vector3 position, int rings = 1)

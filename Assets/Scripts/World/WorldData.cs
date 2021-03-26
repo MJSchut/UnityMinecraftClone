@@ -18,6 +18,7 @@ namespace MinecraftClone.World
             fastNoise.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
             fastNoise.SetFractalOctaves(worldGen.NoiseOctaves);
             fastNoise.SetFrequency(worldGen.NoiseFrequency);
+
             fastNoise.SetSeed(Mathf.RoundToInt(Random.value * 10000f));
 
             fastNoise2.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
@@ -25,7 +26,7 @@ namespace MinecraftClone.World
             fastNoise2.SetFrequency(worldGen.NoiseFrequency2);
             fastNoise2.SetFractalType(FastNoiseLite.FractalType.Ridged);
             fastNoise2.SetFractalLacunarity(3f);
-            fastNoise.SetCellularJitter(1.5f);
+            fastNoise2.SetCellularJitter(1.5f);
             fastNoise2.SetSeed(Mathf.RoundToInt(Random.value * 10000f));
         }
 

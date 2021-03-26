@@ -52,6 +52,7 @@ namespace MinecraftClone.World
             MeshData meshData = new MeshData();
             List<Vector3> vertices = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
+            int numberOfFaces = 0;
 
             for (int x = 0; x < chunkData.GetLength(0); x++)
             {
@@ -69,6 +70,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(BottomPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(4f, 19f)));
+                                    numberOfFaces++;
                                 }   
                             }
 
@@ -77,10 +79,8 @@ namespace MinecraftClone.World
                                 if (chunkData[x, y + 1, z].type == VoxelType.AIR)
                                 {
                                     vertices.AddRange(TopPolygon(offset));
-                                    if (random.NextDouble() > 0.1f)
-                                        uvs.AddRange(GetUVMap(new Vector2(1f, 19f)));
-                                    else
-                                        uvs.AddRange(GetUVMap(new Vector2(2f, 19f)));
+                                    uvs.AddRange(GetUVMap(new Vector2(1f, 19f)));
+                                    numberOfFaces++;
                                 } 
                             }
 
@@ -90,6 +90,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(LeftPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                    numberOfFaces++;
                                 } 
                             } else // x is 0
                             {
@@ -99,6 +100,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(LeftPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                    numberOfFaces++;
                                 }
                             }
 
@@ -108,6 +110,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(RightPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                    numberOfFaces++;
                                 }  
                             }
                             else // x is equal to chunk width
@@ -117,6 +120,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(RightPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                    numberOfFaces++;
                                 }
                             }
 
@@ -126,6 +130,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(FrontPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                    numberOfFaces++;
                                 } 
                             } else // z is 0
                             {
@@ -134,6 +139,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(FrontPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                    numberOfFaces++;
                                 }
                             }
 
@@ -143,6 +149,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(BackPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                    numberOfFaces++;
                                 }
                             }
                             else // z is equal to chunk length
@@ -152,6 +159,7 @@ namespace MinecraftClone.World
                                 {
                                     vertices.AddRange(BackPolygon(offset));
                                     uvs.AddRange(GetUVMap(new Vector2(3f, 19f)));
+                                    numberOfFaces++;
                                 }
                             }
                         }
@@ -160,7 +168,7 @@ namespace MinecraftClone.World
             }
 
             meshData.Vertices = vertices;
-            meshData.Triangles = GetTriangles(Mathf.RoundToInt(vertices.Count / verticesPerPolygon));
+            meshData.Triangles = GetTriangles(numberOfFaces);
             meshData.Uvs = uvs;
 
             return meshData;

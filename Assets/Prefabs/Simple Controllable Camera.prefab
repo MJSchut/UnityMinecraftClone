@@ -130,7 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be76e5f14cfee674cb30b491fb72b09b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boost: 3.5
+  boost: 5
   positionLerpTime: 0.2
   mouseSensitivityCurve:
     serializedVersion: 2
@@ -170,6 +170,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e99d395a27ea405c8c6fb8b321c6f66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  InitalRings: 4
+  UpdateRings: 4
+  DeactivateRings: 6
 --- !u!1 &6581891801225682892
 GameObject:
   m_ObjectHideFlags: 0
@@ -181,7 +184,6 @@ GameObject:
   - component: {fileID: 5557536083771235756}
   - component: {fileID: 7256447113309603281}
   - component: {fileID: 5150259681087911002}
-  - component: {fileID: 5517829639715525724}
   m_Layer: 0
   m_Name: Mesh
   m_TagString: Untagged
@@ -250,16 +252,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!65 &5517829639715525724
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6581891801225682892}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
