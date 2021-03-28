@@ -269,7 +269,7 @@ namespace MinecraftClone.World
             if (voxelX == 0)
                 neighbourPosition = new Vector3(chunkPosition.x - 1, chunkPosition.y, chunkPosition.z);
 
-            else if (voxelX == xlength)
+            else if (voxelX == xlength - 1)
                 neighbourPosition = new Vector3(chunkPosition.x + 1, chunkPosition.y, chunkPosition.z);
 
             if (neighbourPosition != Vector3.zero)
@@ -283,7 +283,7 @@ namespace MinecraftClone.World
             if (voxelZ == 0)
                 neighbourPosition = new Vector3(chunkPosition.x, chunkPosition.y, chunkPosition.z - 1);
 
-            else if (voxelZ == zlength)
+            else if (voxelZ == zlength - 1)
                 neighbourPosition = new Vector3(chunkPosition.x, chunkPosition.y, chunkPosition.z + 1);
 
             if (neighbourPosition != Vector3.zero)
