@@ -153,7 +153,7 @@ Material:
     - _AlphaClip: 0
     - _Blend: 0
     - _BumpScale: 0.47
-    - _Cull: 2
+    - _Cull: 0
     - _Cutoff: 0.008
     - _DetailNormalMapScale: 1
     - _DirectIntensityOutline: 1
